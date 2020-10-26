@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+	body{
+		padding:0;
+		margin:0;
+	}
+	h1{
+		width:500px;
+		margin-left:auto;
+		margin-right:auto;
+		text-align:center;
+	}
+	#videoPanel{
+		width:640px;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	#videoDiv{
+		width:640px;
+        height:480px;
+		text-align:center;
+		border-style:solid;
+		border-width:1px;
+		border-color:black;
+	}
+	#playButton{
+		margin:0;
+		padding:0;
+		width:80px;
+		float:left;
+		font-size:18px;
+	}
+	
+</style>
+
+<body id='mainBody'>
+    <h1>智能婴儿车</h1>
+    <section>
+        <h3>视频画面:</h3>
+        <div id="videoPanel">
+        	<div id="videoDiv">
+                <!-- <video id="v0" width="640" height="480">
+                    <source src="1.mp4" type="video/mp4" >
+                </video> -->
+            </div>
+            <button type="button" id="playButton" onClick="toggleVideo()">打开视频</button>
+            <div style="clear:both"></div>
+        </div>
+    </section>
+    
+</body>
+
+
+<script>
+    var playIndex=-1;
+    var loadIndex=0;
+    var videoState=false;
+    var videoNum=3;
+    var videoParent=document.getElementById('videoDiv');
+    function nextIndex(i){
+        i=(i+1)%videoNum;
+        return i;
+    }
+    function lastIndex(i){
+        i=((i-1)+videoNum)%videoNum;
+        return i;
+    }
+    
+
+    function createVideoElement(){
+        for(var i=0;i<=videoNum-1;i++){
+            var v=document.createElement("video");
+            v.muted=true;
+            //不设成静音不能自动播放
+            //因为Chrome 66为了避免标签产生随机噪音
+            v.width=640;
+            v.height=480;
+            v.id="v"+i;
+            v.controls="controls";
+            //v.autoplay="autoplay";
+            v.style.display="none";
+            videoParent.appendChild(v);
+        }
+        document.getElementById("v0").style="";
+    }
+    
+    function preload(){
+    //重复生成10个video
+        for(var i=0;i<=videoNum-1;i++){
+            var v=document.getElementById("v"+i);
+            v.src="\\car\\h264\\"+i+".mp4"+"?t="+Math.random(1);
+        }
+    }
+
+    function playAndLoad(){
+        playIndex=nextIndex(playIndex);
+        var ilast=lastIndex(playIndex);
+        var vlast=document.getElementById("v"+ilast);
+        var vPlay=document.getElementById("v"+playIndex);
+        vlast.style.display="none";
+        vPlay.style.display="";
+        vPlay.play();
+        vlast.src="\\car\\h264\\"+ilast+".mp4"+"?t="+Math.random(1);
+    }
+    function toggleVideo(){
+        videoState=!videoState;
+        if(videoState){
+            preload();
+            playIndex=-1;
+            playAndLoad();
+            timingFunction=setInterval("playAndLoad()",100*1000/24);
+            document.getElementById("playButton").textContent="关闭视频";
+        }
+        else{
+            clearInterval(timingFunction);
+            document.getElementById("playButton").textContent="打开视频";
+            var v=document.getElementById("v"+playIndex);
+            v.pause();
+            v.style.display="none";
+            document.getElementById("v0").style.display="";
+        }
+    }
+
+    var timingFunction=null;
+    createVideoElement();
+    //preload();
+    toggleVideo();
+</script>
+
+
